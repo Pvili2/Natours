@@ -81,14 +81,46 @@ const deleteTour = (req, res) => {
         .json({ status: 'success', data: null });
 };
 
-//ROUTES
-app.route('/api/v1/tours').get(getAllTours).post(createTour);
-app
-  .route('/api/v1/tours/:id')
-  .get(getTour)
-  .patch(updateTour)
-  .delete(deleteTour);
+const getAllUsers = (req, res) => {
+  res.status(501).json({
+    status: 'error',
+    data: { message: 'This endpoint not implemented yet!' },
+  }); //500 means server error
+};
+const createUser = (req, res) => {
+  res.status(501).json({
+    status: 'error',
+    data: { message: 'This endpoint not implemented yet!' },
+  });
+};
+const getUser = (req, res) => {
+  res.status(501).json({
+    status: 'error',
+    data: { message: 'This endpoint not implemented yet!' },
+  });
+};
+const updateUser = (req, res) => {
+  res.status(501).json({
+    status: 'error',
+    data: { message: 'This endpoint not implemented yet!' },
+  });
+};
+const deleteUser = (req, res) => {
+  res.status(501).json({
+    status: 'error',
+    data: { message: 'This endpoint not implemented yet!' },
+  });
+};
 
+//ROUTES
+const tourRouter = express.Router();
+const userRouter = express.Router();
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
+tourRouter.route('/').get(getAllTours).post(createTour);
+tourRouter.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
+userRouter.route('/').get(getAllUsers).post(createUser);
+userRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
 //Start server
 const port = 3000;
 app.listen(port, () => {
