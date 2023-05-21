@@ -68,6 +68,14 @@ app.patch('/api/v1/tours/:id', (req, res) => {
         .json({ status: 'success', data: { tour: '<Updated tour is here>' } });
 });
 
+app.delete('/api/v1/tours/:id', (req, res) => {
+  tours.length < req.params.id * 1
+    ? res.status(404).json({ status: 'fail', message: 'Invalid ID' })
+    : res
+        .status(204) // 204 means NO CONTENT
+        .json({ status: 'success', data: null });
+});
+
 const port = 3000;
 app.listen(port, () => {
   console.log('Server is listening on ' + port);
