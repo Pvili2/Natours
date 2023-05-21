@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const app = express();
 
+app.use(express.json());
 /* app.get('/', (req, res) => {
   //Küldhetünk szöveget vissza:
   // res.status(200).end('Hello from the server');
@@ -18,6 +19,7 @@ const tours = JSON.parse(
 );
 
 app.get('/api/v1/tours', (req, res) => {
+  //200 means OK
   res.status(200).json({
     status: 'success',
     results: tours.length,
@@ -25,6 +27,29 @@ app.get('/api/v1/tours', (req, res) => {
       tours,
     },
   });
+});
+
+app.post('/api/v1/tours', (req, res) => {
+  // console.log(req.body);
+  const newId = tours[tours.length - 1].id + 1;
+
+  const newTour = Object.assign({ id: newId }, req.body);
+  tours.push(newTour);
+
+  fs.writeFile(
+    `${__dirname}/dev-data/data/tours-simple.json`,
+    JSON.stringify(tours),
+    (error) => {
+      //201 means created
+      res.status(201).json({
+        staus: 'success',
+        data: {
+          tour: newTour,
+        },
+      });
+    }
+  );
+  // res.send('Done'); We cannot send multiple responses, only one!
 });
 
 const port = 3000;
