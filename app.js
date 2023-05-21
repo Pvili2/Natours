@@ -34,7 +34,7 @@ app.get('/api/v1/tours/:id', (req, res) => {
 
   tour
     ? res.status(200).json({ status: 'success', data: { tour } }) //200 means OK
-    : res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+    : res.status(404).json({ status: 'fail', message: 'Invalid ID' }); //404 means NOT FOUND
 });
 
 app.post('/api/v1/tours', (req, res) => {
@@ -50,7 +50,7 @@ app.post('/api/v1/tours', (req, res) => {
     (error) => {
       //201 means created
       res.status(201).json({
-        staus: 'success',
+        status: 'success',
         data: {
           tour: newTour,
         },
@@ -58,6 +58,14 @@ app.post('/api/v1/tours', (req, res) => {
     }
   );
   // res.send('Done'); We cannot send multiple responses, only one!
+});
+
+app.patch('/api/v1/tours/:id', (req, res) => {
+  tours.length < req.params.id * 1
+    ? res.status(404).json({ status: 'fail', message: 'Invalid ID' })
+    : res
+        .status(200)
+        .json({ status: 'success', data: { tour: '<Updated tour is here>' } });
 });
 
 const port = 3000;
