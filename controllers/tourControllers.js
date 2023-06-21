@@ -6,13 +6,36 @@ const tours = JSON.parse(
 );
 
 const getAllTours = async (req, res) => {
-  //200 means OK
+  //BUILD the query
+  // 1) Filtering
+  const queryObj = { ...req.query };
+  const excludedFields = ['page', 'sort', 'limit', 'fields'];
+  excludedFields.forEach((el) => delete queryObj[el]);
+
+  // Advanced filtering
+  let queryString = JSON.stringify(queryObj);
+  queryString = queryString.replace(
+    /\b(gte|gt|lte|lt)\b/g,
+    (match) => `$${match}`
+  );
+
+  let query = Tour.find(JSON.parse(queryString)); //ezzel lehet szűrni az adatok között
+
+  // 2) Sorting
+  if (req.query.sort) {
+    let sortBy = JSON.stringify(req.query.sort).replace(',', ' ');
+    query = query.sort(JSON.parse(sortBy)); //lekérdezés rendezése
+  }
+
+  //EXECUTE the query
+  const tours = await query;
+
   await Tour.find({}, (err, allTour) => {
     if (err) console.log(err);
     res.status(200).json({
       status: 'success',
-      number_of_tours: allTour.length,
-      data: { allTour },
+      number_of_tours: tours.length,
+      data: { tours },
     }); //200 means OK
   });
 };
