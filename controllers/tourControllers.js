@@ -114,9 +114,58 @@ const getTouStatistics = async (req, res) => {
     ])
     res.status(200).json({ status: 'success', data: stats });
   } catch (error) {
-    res.status(404).json({ status: 'error', error: error });
+    res.status(404).json({ status: 'error', error: error.message });
   }
 }
+
+const getMonthlyPlan = async (req, res) => {
+  try {
+    const year = Number(req.params.year);
+    const plan = await Tour.aggregate([
+      {
+        $unwind: "$startDates" //deconstruct an array which is good for us
+      },
+      {
+        $addFields: {
+          "startYear": { $year: "$startDates" },
+        }
+      },
+      {
+        $match: {
+          startYear: year
+        }
+      },
+      {
+        $group: {
+          "_id": { $month: "$startDates" },
+          "numOfTours": { $sum: 1 },
+          "tours": { $push: "$name" }
+        }
+      },
+      {
+        $sort: {
+          "numOfTours": -1
+        }
+      },
+      {
+        $addFields: {
+          "month": "$_id"
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+        }
+      }
+    ])
+    res.status(200).json({
+      status: 'success', results: plan.length, data: plan
+    });
+  } catch (error) {
+    res.status(404).json({ status: 'error', error: error.message });
+  }
+}
+
 module.exports = {
   getAllTours,
   getTour,
@@ -124,5 +173,6 @@ module.exports = {
   updateTour,
   deleteTour,
   aliasTopTours,
-  getTouStatistics
+  getTouStatistics,
+  getMonthlyPlan
 };
