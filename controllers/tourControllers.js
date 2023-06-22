@@ -76,12 +76,53 @@ const deleteTour = async (req, res) => {
     res.status(404).json({ status: 'error', error: error });
   }
 };
-
+const getTouStatistics = async (req, res) => {
+  try {
+    const stats = await Tour.aggregate([
+      //STAGE 1, matching the correct data
+      {
+        $match: { "ratingsAverage": { $gte: 4.5 } }
+      },
+      //STAGE 2, we can group the datas in different groups
+      {
+        $group: {
+          '_id': "$difficulty", // based on which field we want to group, if it is null, then we are grouping all data in a big group
+          'numberOfTours': { $sum: 1 },
+          'all-price': { $sum: "$price" },
+          'avg-price': { $avg: "$price" },
+          'avg-rating': { $avg: "$ratingsAverage" },
+          'min-price': { $min: "$price" },
+          'max-price': { $max: "$price" },
+        }
+      },
+      //STAGE 3, we can modify the datas, for example we can round the avg numbers to two decimals
+      {
+        $set: {
+          'avg-price': { $round: ['$avg-price', 2] }
+        }
+      },
+      //STAGE 4, we can orderby the elements DESC or ASC
+      {
+        $sort: {
+          "avg-price": - 1
+        }
+      },
+      //We can repeat a stage any amount of times
+      /* {
+        $match: { "_id": { $ne: "easy" } }
+      } */
+    ])
+    res.status(200).json({ status: 'success', data: stats });
+  } catch (error) {
+    res.status(404).json({ status: 'error', error: error });
+  }
+}
 module.exports = {
   getAllTours,
   getTour,
   createTour,
   updateTour,
   deleteTour,
-  aliasTopTours
+  aliasTopTours,
+  getTouStatistics
 };
