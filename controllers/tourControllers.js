@@ -14,7 +14,13 @@ const aliasTopTours = async (req, res, next) => {
 
 const getAllTours = async (req, res) => {
   try {
-    const tours = await (new APIFeatures(Tour.find(), req.query).filter().sorting().pagination().fieldLimiting()).query;
+    const tours = await (new APIFeatures(Tour.find(), 
+    req.query)
+    .filter()
+    .sorting()
+    .pagination()
+    .fieldLimiting())
+    .query;
     res.status(200).json({
       status: "success",
       results: tours.length,
