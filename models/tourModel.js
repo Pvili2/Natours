@@ -1,11 +1,20 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const validator = require('validator');
 const tourSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'The name property is required'],
     unique: [true, 'The name property must be unique'],
     trim: true,
+    maxlength: [40, 'The maximum length of the name property is 40 characters'],
+    minlength: [10, 'The minimum length of the name property is 10 characters'],
+    validate: {
+      validator: (value) => {
+        return validator.isAlpha(value.replaceAll(' ', ''));
+      },
+      message: 'The name property must be contains alpha characters'
+    }
   },
   slug: {
     type: String,
@@ -21,10 +30,16 @@ const tourSchema = new mongoose.Schema({
   difficulty: {
     type: String,
     required: [true, 'A tour must have a difficulty'],
+    enum: {
+      values: ['easy', 'medium', 'difficult'],
+      message: 'The difficulty property must have a value of easy or medium or difficult'
+    }
   },
   ratingsAverage: {
     type: Number,
     default: 4.5,
+    min: [1, "The rating must be above 1"],
+    max: [5, "The rating must be below 5"]
   },
   ratingsQuantity: {
     type: Number,
@@ -34,7 +49,16 @@ const tourSchema = new mongoose.Schema({
     type: Number,
     required: [true, 'The price property is required'],
   },
-  priceDiscount: Number,
+  priceDiscount: {
+    type: Number,
+    validate: {
+      //only works when the user create a document. If you wanna update a tour, this is not going to work
+      validator: function (value) {
+        return value < this.price;
+      },
+      message: "The priceDiscount({VALUE}) must be lower then the pice."
+    }
+  },
   summary: {
     type: String,
     trim: true, // eltávolít minden white space-t a string elejéről és végéről
