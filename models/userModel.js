@@ -35,6 +35,9 @@ const userSchema = new mongoose.Schema({
         //ONLY WORKS IN SAVE (This is not gonna work with update)
         validate: [passVal, `The 2 password is not equal! (Invalid password: {VALUE})`]
     },
+    passwordChangedAt: {
+        type: Date
+    }
 })
 
 //Only add next param, because otherwise the whole route is broken
@@ -59,6 +62,14 @@ userSchema.methods.passwordCompare = async (hashPass, userPass) => {
     const auth = await bcrypt.compare(userPass, hashPass)
 
     return auth;
+}
+userSchema.methods.changedPasswordAfter = function (timestap) {
+
+    if (this.passwordChangedAt) {
+        return parseInt(this.passwordChangedAt.getTime() / 1000, 10) > timestap;
+    }
+    //the password is not changed since the jwt token
+    return false;
 }
 const User = mongoose.model('User', userSchema)
 

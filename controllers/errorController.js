@@ -32,6 +32,14 @@ const validationErrorHandler = (err) => {
     return new AppError(message, 403) // 400 means bad request
 }
 
+const jsonWebErrorHandler = () => {
+
+    return new AppError('Invalid token, please use a real one', 401)
+}
+const tokenExpiredHandler = () => {
+    return new AppError('The token is expired, please log in again', 401)
+}
+
 module.exports = (err, req, res, next) => {
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
@@ -50,6 +58,8 @@ module.exports = (err, req, res, next) => {
             case 'ValidationError':
                 error = validationErrorHandler(error)
                 break;
+            case 'JsonWebTokenError': error = jsonWebErrorHandler()
+            case 'TokenExpiredError': error = tokenExpiredHandler(error)
         }
         sendErrorProd(error, res);
     }
