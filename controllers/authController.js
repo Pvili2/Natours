@@ -17,7 +17,8 @@ const signUp = catchAsync(async (req, res) => {
         email: req.body.email,
         password: req.body.password,
         passwordConfirm: req.body.passwordConfirm,
-        passwordChangedAt: req.body.passwordChangedAt
+        passwordChangedAt: req.body.passwordChangedAt,
+        role: req.body.role
     });
     console.log(user);
     //create token
@@ -69,12 +70,39 @@ const protect = catchAsync(async (req, res, next) => {
     }
 
 
-    req.user = user;
+    req.body = user;
     next();
 })
+//We don't know how many parameters we need in the future, so we can specify this in this way(roles is an array)
+const restrictTo = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.body.role)) return next(new AppError("You don't have peprmission to access", 403)) //forbidden
+        next();
+    }
 
+}
+
+const forgotPassword = catchAsync(async (req, res, next) => {
+    // 1) Identify the user from the req.body.email
+    const user = await User.findOne({ email: req.body.email })
+    if (!user) return next(new AppError('User not found', 404))
+    // 2) Generate random reset token
+    const resetToken = user.createPasswordResetToken();
+
+    //We need to save the "user" because in the "createPasswordResetToken" method is set a few field in our doc
+    await user.save({ validateBeforeSave: false });
+    console.log(user)
+    // 3) Send it back to the users email
+})
+
+const resetPassword = (req, res, next) => {
+
+}
 module.exports = {
     signUp,
     login,
-    protect
+    protect,
+    restrictTo,
+    forgotPassword,
+    resetPassword
 }

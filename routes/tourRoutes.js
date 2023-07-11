@@ -1,7 +1,7 @@
 const fs = require('fs');
 const express = require('express');
 const controller = require('../controllers/tourControllers');
-const { protect } = require('../controllers/authController')
+const { protect, restrictTo } = require('../controllers/authController')
 const router = express.Router();
 
 //shortcut example, top 5 cheapest tour
@@ -13,7 +13,7 @@ router
   .route('/:id')
   .get(controller.getTour)
   .patch(controller.updateTour)
-  .delete(controller.deleteTour);
+  .delete(protect, restrictTo("admin"), controller.deleteTour);
 
 
 module.exports = router;

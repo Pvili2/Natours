@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
+const crypto = require('crypto')
 //We can write our own email validator, but there are many 3rd party libraries
 /* function emailValidate(email) {
     return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
@@ -23,6 +24,11 @@ const userSchema = new mongoose.Schema({
         validate: [validator.isEmail, 'The email syntax is invalid']
     },
     photo: String,
+    role: {
+        type: String,
+        default: "user",
+        enum: ["user", "guide", "lead-guide", "admin"]
+    },
     password: {
         type: String,
         required: [true, 'The user password is required'],
@@ -37,7 +43,11 @@ const userSchema = new mongoose.Schema({
     },
     passwordChangedAt: {
         type: Date
-    }
+    },
+    passwordResetToken: {
+        type: String
+    },
+    passwordResetExpires: Date
 })
 
 //Only add next param, because otherwise the whole route is broken
@@ -70,6 +80,15 @@ userSchema.methods.changedPasswordAfter = function (timestap) {
     }
     //the password is not changed since the jwt token
     return false;
+}
+
+userSchema.methods.createPasswordResetToken = function () {
+    const token = crypto.randomBytes(32).toString("hex");
+
+    this.passwordResetToken = crypto.createHash('sha256').update(token).digest('hex');
+    this.passwordResetExpires = Date.now() + 600 * 1000;
+
+    return token;
 }
 const User = mongoose.model('User', userSchema)
 
